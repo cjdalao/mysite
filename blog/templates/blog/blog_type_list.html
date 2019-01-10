@@ -1,0 +1,7 @@
+{# 使用模板文件 #}
+{% extends 'blog/blog_list.html' %}
+{# 页面标题 #}
+{% block title %}
+    {{ type.type_name }}
+{% endblock %}
+{% block blog_title %}{{ type.type_name }}{% endblock %}

@@ -1,0 +1,106 @@
+{# 使用模板文件 #}
+{% extends 'base.html' %}
+{# 页面标题 #}
+{% block title %}
+    我的博客
+{% endblock %}
+{% load staticfiles %}
+{% load comment_tags %}
+{% load like_tags %}
+{% block head_style %}
+    <link rel="stylesheet" href="{% static 'blog.css' %}">
+{% endblock %}
+{% block nav_blog_active%}active{% endblock %}
+{# 各自的内容 #}
+{% block content %}
+    <div class="container">
+        <div class="row">
+                <div class="col-xs-12 col-sm-8 col-md-8">
+                    {# 实现博客列表面板功能 #}
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4>{% block blog_title %}全部博客{% endblock %}</h4></div>
+                        <div class="panel-body">
+                            {% for blog in page_of_blogs.object_list %}
+                            <div class="blog">
+                                <h3><a href="{% url 'blog_detail' blog.pk %}">{{ blog.title }}</a></h3>
+                                <p class="blog-info"><span class="glyphicon glyphicon-tags" aria-hidden="true"></span> <a href="{% url 'blog_type_list' blog.blog_type.pk %}">{{ blog.blog_type }}</a></p>
+                                <p>{{ blog.content|striptags|truncatechars_html:30 }}</p>
+                                <p><span class="glyphicon glyphicon-time" aria-hidden="true"></span> {{ blog.create_time|date:'Y-m-d'}}&nbsp;&nbsp;
+                                <span class="glyphicon glyphicon-book" aria-hidden="true"></span>阅读数量：{{ blog.get_read_count }}{# 调用blog类的read_count方法 #}
+                                    <span class="glyphicon glyphicon-book" aria-hidden="true"></span>评论数： {% count_comment blog %}
+                                    <span class="glyphicon glyphicon-book" aria-hidden="true"></span>点赞数：{% get_like_sum blog %}
+                                </p>
+
+                            </div>
+                            {% empty %}
+                            <div class="blog">
+                            <h3>暂无博客</h3>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {# 实现分页功能 #}
+                    <div class="pa">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            <li>
+                                {% if page_of_blogs.has_previous %}
+                                <a href="?page={{ page_of_blogs.previous_page_number }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+                                {% else %}
+                                <span aria-hidden="true">&laquo;</span>
+                                {% endif %}
+                            </li>
+                        {% for page_num in page_range %}
+                            {% if page_num == page_of_blogs.number %}
+                            <li class="active"><a href="?page={{ page_num }}">{{ page_num }}</a></li>
+                            {%else%}
+                                {% if page_num == '...'%}
+                                <li><span>{{ page_num }}</span></li>
+                                {%else%}
+                                    <li><a href="?page={{ page_num }}">{{ page_num }}</a></li>
+                                {% endif %}
+                            {%endif%}
+                        {% endfor %}
+                        <li>
+                            {% if page_of_blogs.has_next %}
+                            <a href="?page={{ page_of_blogs.next_page_number}}" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>
+                            {% else %}
+                            <span aria-hidden="true">&raquo;</span>
+                            {% endif %}
+                        </li>
+                        </ul>
+
+                    </nav>
+                    <p>共有  <span class="blog-length">{{ page_of_blogs.paginator.count }}</span> 篇博客</p>
+                    </div>
+                </div>
+                <div class="hidden-xs col-sm-4 col-md-4">
+                    {# 实现博客分类面板功能 #}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">博客分类</div>
+                        <div class="panel-body">
+                            <ul style="list-style-type:none;">
+                                {% for blog_type in blog_types %}
+                                    <li><a href="{% url 'blog_type_list' blog_type.pk %}">{{ blog_type.type_name }} ({{ blog_type.blog_count }})</a></li>
+                                {% empty %}
+                                    <li><p> - - 暂无博客 - -</p></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {# 实现博客时间分类面板功能 #}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">日期归档</div>
+                        <div class="panel-body">
+                            <ul style="list-style-type:none;">
+                                {% for blog_date, blog_date_count in blog_dates.items %}
+                                <li><a href="{% url 'blogs_with_date' blog_date.year blog_date.month%}">{{ blog_date|date:"Y年m月" }}({{ blog_date_count }})</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+{% endblock %}
