@@ -26,4 +26,4 @@ def get_seven_days_hot_blog():
     date = today - datetime.timedelta(days=7)
     blogs = Blog.objects.filter(read_details__date__date__lte=today, read_details__date__date__gte=date) \
                         .values('id', 'title').annotate(read_num_sum=Sum('read_details__read_count')).order_by('-read_num_sum')
-    return blogs[:3]
+    return blogs
